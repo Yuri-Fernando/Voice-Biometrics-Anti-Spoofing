@@ -1,277 +1,399 @@
-# Speech AI System: Voice Biometrics & Anti-Spoofing
+# Speech AI System — Voice Biometrics & Anti-Spoofing
 
-Sistema completo de inteligência artificial para processamento de áudio e detecção de spoofing de voz usando deep learning em PyTorch. O sistema classifica áudio como real ou falsificado (deepfakes, síntese TTS) e extrai características biométricas de locutor.
+Sistema de Inteligência Artificial para **processamento de áudio, detecção de spoofing de voz e análise biométrica de locutores**, desenvolvido com Deep Learning em PyTorch.
 
-## O Que Este Projeto Faz?
-
-Este é um **sistema de defesa contra deepfakes e áudio falsificado** (anti-spoofing) baseado em redes neurais convolucionais. Ele processa áudio e responde duas perguntas principais:
-
-1. **Este áudio é real ou falsificado?** (Anti-Spoofing)
-2. **Quem é o locutor?** (Verificação de Locutor)
-
-### Capacidades Principais
-
-1. **Anti-Spoofing**: Classifica áudio em tempo real como REAL ou FAKE (deepfake/TTS)
-   - Entrada: Arquivo WAV
-   - Saída: Predição + Confiança
-   - Exemplo: Detecta quando alguém usa AI para clonar sua voz
-
-2. **Speaker Verification**: Extrai embeddings de voz (256 dimensões) para:
-   - Autenticação de locutor (análise forense)
-   - Identificação de pessoa
-   - Comparação de vozes (mesma pessoa fez estes 2 áudios?)
-
-3. **Speaker Diarization**: Segmenta áudio multi-locutor:
-   - Identifica quem falou quando
-   - Marca mudanças de locutor
-   - Útil para transcrição e análise
+A aplicação combina processamento de sinais de áudio, extração de características acústicas, redes neurais convolucionais, embeddings de voz, speaker verification e diarização.
 
 ---
 
-## ⚠️ Nota Importante: Dados Sintéticos
+## Status
 
-**Este projeto utiliza dados COMPLETAMENTE SINTÉTICOS** para demonstração:
+🟢 **Concluído — Projeto de portfólio / Speech AI & Voice Biometrics**
 
-### Dados Utilizados
-- **Áudios Reais**: Sinusóides simples (frequências 200Hz + 400Hz)
-- **Áudios Fake**: Sinusóides diferentes (frequências 250Hz + 350Hz)  
-- **Total**: 30 áudios (15 reais + 15 fake)
+O pipeline principal está implementado e funcional, contemplando:
 
-### Por Que as Métricas Estão em 1.000 (100%)?
+* Processamento e normalização de áudio;
+* Extração de features acústicas;
+* Classificação anti-spoofing;
+* Speaker Verification;
+* Speaker Diarization;
+* Treinamento e inferência com PyTorch;
+* Data augmentation;
+* Avaliação por métricas de classificação e biometria;
+* API REST com FastAPI;
+* Notebook demonstrativo;
+* Scripts independentes de treinamento e inferência;
+* Estrutura modular para evolução;
+* Documentação técnica.
 
-As métricas perfeitas (Acurácia=100%, ROC-AUC=1.0, EER=0.0%) ocorrem **APENAS** porque:
+A versão concluída utiliza um **dataset sintético controlado**, destinado à demonstração e validação do pipeline. A utilização de datasets reais especializados, como ASVspoof 2019, permanece como próxima etapa de validação experimental.
 
-1. **Separação Trivial**: As frequências dos áudios são bem diferentes
-2. **Sem Ruído Real**: Áudios limpos, sem background noise, reverberação ou codificação
-3. **Dataset Minúsculo**: Apenas 30 amostras vs ~100.000 em datasets reais
-4. **Padrão Constante**: Frequências fixas, sem variabilidade como áudio real
+---
 
-### Na Realidade com Dados Reais
+## Sobre o projeto
 
-Com datasets profissionais como **ASVspoof 2019** (100k+ áudios):
-- **Acurácia Esperada**: 85-95%
-- **ROC-AUC Esperado**: 0.85-0.95
-- **EER Esperado**: 5-15%
+O sistema responde a duas perguntas principais:
 
-Isso porque áudio real tem:
-- Variação natural de voz (tom, velocidade, ênfase)
-- Ruído de fundo (traffic, ar condicionado)
-- Ecos e reverberação
-- Compressão e artefatos de codificação
-- Deepfakes cada vez mais realistas
+1. **O áudio é real ou falsificado?**
+2. **Quem é o locutor?**
 
-### Melhorias Futuras
+A arquitetura também possui uma camada de **speaker diarization**, permitindo segmentar áudios com múltiplos locutores e identificar mudanças entre falantes.
 
-Para usar dados reais:
-```bash
-# Download ASVspoof 2019 dataset
-wget https://datashare.is.ed.ac.uk/bitstream/handle/10283/3336/ASVspoof2019_LA_train_dev.zip
+O projeto explora aplicações de IA relacionadas a **Voice Biometrics, Anti-Spoofing, Audio Deepfake Detection e Speaker Analysis**.
 
-# Treinar com dados reais
-python run_pipeline.py --dataset asv_spoof_2019 --epochs 50
+---
+
+## Funcionalidades
+
+### Anti-Spoofing
+
+Classificação de áudio como:
+
+* `REAL`
+* `FAKE`
+
+A entrada é um arquivo de áudio e a saída inclui:
+
+* Predição;
+* Confiança;
+* Probabilidade por classe.
+
+### Speaker Verification
+
+O sistema extrai **embeddings de voz de 256 dimensões**, permitindo:
+
+* Comparação entre vozes;
+* Verificação de similaridade;
+* Identificação de locutor;
+* Experimentação com autenticação biométrica.
+
+### Speaker Diarization
+
+Processamento de áudios com múltiplos locutores para:
+
+* Identificar mudanças de falante;
+* Determinar quem falou em cada intervalo;
+* Gerar segmentos por locutor.
+
+### Processamento de áudio
+
+* Carregamento de arquivos;
+* Normalização;
+* Pitch shifting;
+* Time stretching;
+* Adição de ruído;
+* Remoção de silêncio;
+* Voice Activity Detection simplificada.
+
+---
+
+## Arquitetura
+
+```text
+                     ┌─────────────────────┐
+                     │     Audio Input     │
+                     │ WAV / MP3 / Audio   │
+                     └──────────┬──────────┘
+                                │
+                                ▼
+                     ┌─────────────────────┐
+                     │ Audio Preprocessing │
+                     │ Normalize / VAD     │
+                     │ Augmentation        │
+                     └──────────┬──────────┘
+                                │
+                                ▼
+                     ┌─────────────────────┐
+                     │ Feature Extraction  │
+                     │ Mel / MFCC / Spec   │
+                     └──────────┬──────────┘
+                                │
+                    ┌───────────┴───────────┐
+                    ▼                       ▼
+          ┌──────────────────┐    ┌──────────────────┐
+          │ Anti-Spoof Model │    │ Speaker Model    │
+          │ CNN / ResNet     │    │ Embeddings       │
+          │ LSTM             │    │ 256 dimensions   │
+          └────────┬─────────┘    └────────┬─────────┘
+                   │                       │
+                   ▼                       ▼
+          ┌──────────────────┐    ┌──────────────────┐
+          │ Real / Fake      │    │ Speaker Analysis │
+          │ + Confidence     │    │ / Verification   │
+          └──────────────────┘    └──────────────────┘
+                   │                       │
+                   └───────────┬───────────┘
+                               ▼
+                    ┌──────────────────────┐
+                    │ API / Python /       │
+                    │ Notebook / Inference │
+                    └──────────────────────┘
 ```
 
 ---
 
-## Início Rápido
+## Pipeline de Dados
 
-### Instalação
+O fluxo completo de processamento é:
 
-```bash
-pip install -r requirements.txt
+```text
+1. Carregamento do áudio
+        ↓
+2. Normalização
+        ↓
+3. Data Augmentation (opcional)
+        ↓
+4. Extração de features
+        ↓
+5. Normalização das features
+        ↓
+6. Construção do Dataset
+        ↓
+7. Batch / DataLoader
+        ↓
+8. Forward Pass
+        ↓
+9. Loss + Otimização
+        ↓
+10. Validação
+        ↓
+11. Métricas
+        ↓
+12. Salvamento do modelo
+        ↓
+13. Inferência via Python ou API
 ```
 
-### Opção 1: Jupyter Notebook (Recomendado para Exploração)
+Essa sequência está implementada entre os módulos de preprocessing, features, dataset, training, evaluation e inference.
 
-```bash
-jupyter notebook notebook_demo.ipynb
-```
+---
 
-Execute as 10 células sequencialmente para:
-- Gerar dados dummy
-- Preparar dataset
-- Treinar modelo
-- Avaliar com métricas profissionais
-- Visualizar features
-- Fazer predições
+## Tecnologias utilizadas
 
-### Opção 2: Script Python
+### Linguagem
 
-```bash
-# Treinamento completo
-python src/main.py --mode train --epochs 5
+* Python 3.10+
 
-# Predição em arquivo
-python src/predict.py --audio audio.wav --task spoof
+### Deep Learning
 
-# Treinar modelo específico
-python src/train.py --model-type anti_spoof --epochs 20
-```
+* PyTorch 2.0+
+* CNN
+* ResNet
+* LSTM
 
-### Opção 3: API REST
+### Processamento de áudio
 
-```bash
-python -m uvicorn api.main:app --reload
-```
+* librosa
+* NumPy
+* SciPy
 
-Acesse http://localhost:8000/docs para documentação interativa com Swagger.
+### Machine Learning
 
-### Opção 4: Python Direto
+* scikit-learn
 
-```python
-from src import AudioProcessor, FeatureExtractor, CNNAntiSpoofing, ModelTrainer
-import torch
+### Dados
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+* Pandas
 
-# Carregar e processar áudio
-processor = AudioProcessor(sr=16000)
-audio, sr = processor.load_audio('audio.wav')
-audio = processor.normalize_audio(audio)
+### Visualização
 
-# Extrair features
-extractor = FeatureExtractor(sr=16000, n_mels=128)
-mel_spec = extractor.extract_mel_spectrogram(audio)
-mel_spec = extractor.normalize_features(mel_spec)
+* Matplotlib
 
-# Predição
-model = CNNAntiSpoofing().to(device)
-mel_tensor = torch.FloatTensor(mel_spec).unsqueeze(0).unsqueeze(0).to(device)
+### API
 
-with torch.no_grad():
-    output = model(mel_tensor)
-    probs = torch.softmax(output, dim=1)
-    prediction = 'real' if probs[0, 0] > probs[0, 1] else 'fake'
-    confidence = float(probs[0].max())
+* FastAPI
+* Uvicorn
 
-print(f"Predição: {prediction}, Confiança: {confidence:.2%}")
-```
+### Desenvolvimento
 
-## Estrutura do Projeto
+* Jupyter Notebook
+* CUDA opcional
 
-```
-Speech AI System/
-├── src/
-│   ├── main.py              # Script principal integrado (SpeechAIProject)
-│   ├── train.py             # Treinamento standalone
-│   ├── predict.py           # Inferência com modelos
-│   ├── preprocessing.py      # Carregamento e normalização de áudio
-│   ├── features.py          # Extração de features (MFCC, Mel-spec)
-│   ├── models.py            # Arquiteturas (CNN, ResNet, LSTM)
-│   ├── dataset.py           # Custom Dataset com augmentação
-│   ├── training.py          # Loop de treinamento com early stopping
-│   ├── evaluation.py        # Métricas profissionais (EER, ROC-AUC)
-│   ├── diarization.py       # Diarização e speaker verification
-│   └── __init__.py          # Exports de módulos
-│
-├── api/
-│   └── main.py              # API REST com FastAPI
-│
-├── notebook_demo.ipynb      # 10 células para exploração interativa
-├── DOCUMENTACAO.md          # Documentação técnica detalhada
-├── requirements.txt         # Dependências
-├── README.md                # Este arquivo
-│
-├── data/raw/                # Áudios brutos (criado automaticamente)
-├── models/                  # Modelos treinados (criado automaticamente)
-└── results/                 # Visualizações e métricas (criado automaticamente)
-```
+---
 
-## Componentes Principais
+## Dataset
 
-### AudioProcessor (`src/preprocessing.py`)
+### Dataset atual
 
-Gerencia carregamento, normalização e augmentação de áudio.
+A versão atual utiliza **dados completamente sintéticos**:
 
-```python
-from src import AudioProcessor
+| Classe       | Geração                     |
+| ------------ | --------------------------- |
+| Real         | Senoides de 200 Hz + 400 Hz |
+| Fake         | Senoides de 250 Hz + 350 Hz |
+| Total        | 30 áudios                   |
+| Distribuição | 15 real / 15 fake           |
 
-processor = AudioProcessor(sr=16000)
-audio, sr = processor.load_audio('file.wav')
-audio = processor.normalize_audio(audio)
-audio = processor.pitch_shift(audio, sr, n_steps=2)
-audio = processor.add_gaussian_noise(audio, snr_db=20)
-```
+### Por que utilizar dados sintéticos?
 
-**Métodos:**
-- `load_audio()` - Carrega áudio com librosa
-- `normalize_audio()` - Normaliza para [-1, 1]
-- `pitch_shift()` - Data augmentation por mudança de tom
-- `time_stretch()` - Data augmentation por mudança de velocidade
-- `add_gaussian_noise()` - Adiciona ruído gaussiano
-- `remove_silence()` - Voice activity detection simples
+O dataset foi utilizado para validar a implementação do pipeline, incluindo:
 
-### FeatureExtractor (`src/features.py`)
+* carregamento;
+* preparação;
+* treinamento;
+* classificação;
+* avaliação;
+* inferência.
 
-Extrai features acústicas variadas para alimentar redes neurais.
+Entretanto, a separação entre as classes é artificial e não representa a complexidade de áudio de voz real.
+
+---
+
+## Resultados Atuais
+
+Com o dataset sintético, o sistema apresenta:
+
+| Métrica   | Resultado |
+| --------- | --------: |
+| Accuracy  |      100% |
+| ROC-AUC   |       1.0 |
+| EER       |      0.0% |
+| Precision |      100% |
+| Recall    |      100% |
+| F1-Score  |       1.0 |
+
+Esses resultados são válidos **somente para o dataset sintético utilizado** e não representam desempenho esperado em dados reais.
+
+### Interpretação
+
+As métricas perfeitas decorrem principalmente de:
+
+* separação espectral simples entre classes;
+* ausência de ruído real;
+* ausência de reverberação;
+* ausência de compressão;
+* dataset extremamente pequeno;
+* padrões de frequência fixos.
+
+---
+
+## Extração de Features
+
+O sistema possui um módulo dedicado à extração de características acústicas.
+
+### Features implementadas
+
+* MFCC — 40 coeficientes;
+* Mel-spectrogram — 128 bins;
+* Spectrogram;
+* Delta MFCC;
+* Chroma;
+* Zero Crossing Rate;
+* Spectral Centroid;
+* Spectral Rolloff;
+* RMS Energy.
+
+Exemplo:
 
 ```python
 from src import FeatureExtractor
 
-extractor = FeatureExtractor(sr=16000, n_mels=128)
+extractor = FeatureExtractor(
+    sr=16000,
+    n_mels=128
+)
+
 mel_spec = extractor.extract_mel_spectrogram(audio)
 mfcc = extractor.extract_mfcc(audio)
-features = extractor.extract_combined_features(audio, ['mel', 'mfcc'])
+
+features = extractor.extract_combined_features(
+    audio,
+    ['mel', 'mfcc']
+)
 ```
 
-**Features extraídas:**
-- MFCC (40 coeficientes)
-- Mel-spectrogram (128 bins)
-- Spectrogram
-- Delta MFCC
-- Chroma
-- Zero crossing rate
-- Spectral centroid
-- Spectral rolloff
-- RMS energy
+---
 
-### Modelos (`src/models.py`)
+## Modelos
 
-Múltiplas arquiteturas de deep learning.
+### CNNAntiSpoofing
 
-**CNNAntiSpoofing** (padrão para classificação)
-```
-Input (1, 128, T)
-  -> Conv1d(1, 32) + ReLU + MaxPool + BatchNorm
-  -> Conv1d(32, 64) + ReLU + MaxPool + BatchNorm
-  -> Conv1d(64, 128) + ReLU + MaxPool + BatchNorm
-  -> AdaptiveAvgPool
-  -> Linear(128, 64) + ReLU + Dropout
-  -> Linear(64, 2)  # real/fake
-Output (batch, 2)
-```
+Modelo principal para classificação de áudio real/fake:
 
-**SpeakerEmbedding** (para speaker verification)
-```
-Input (1, 128, T)
-  -> Conv1d(1, 32) + Conv1d(32, 64) + Conv1d(64, 128)
-  -> AdaptiveAvgPool
-  -> Linear(128, 256)
-  -> L2 Normalize
-Output (batch, 256)
+```text
+Input
+(1, 128, T)
+    ↓
+Conv1D(1, 32)
+    ↓
+ReLU + MaxPool + BatchNorm
+    ↓
+Conv1D(32, 64)
+    ↓
+ReLU + MaxPool + BatchNorm
+    ↓
+Conv1D(64, 128)
+    ↓
+ReLU + MaxPool + BatchNorm
+    ↓
+AdaptiveAvgPool
+    ↓
+Linear(128, 64)
+    ↓
+ReLU + Dropout
+    ↓
+Linear(64, 2)
+    ↓
+REAL / FAKE
 ```
 
-**Modelos disponíveis:**
-- `CNNAntiSpoofing` - 3 blocos convolucionais
-- `SpeakerEmbedding` - Extrator de embeddings
-- `ResNetAntiSpoofing` - ResNet mais profunda
-- `LSTMAntiSpoofing` - Com camadas recorrentes
-- `SpeechAISystem` - Combina anti-spoofing + speaker embedding
+### SpeakerEmbedding
 
-### ModelTrainer (`src/training.py`)
+Modelo para geração de embeddings:
 
-Orquestra o loop completo de treinamento.
+```text
+Input
+(1, 128, T)
+    ↓
+Convolutional Blocks
+    ↓
+AdaptiveAvgPool
+    ↓
+Linear(128, 256)
+    ↓
+L2 Normalize
+    ↓
+256-dimensional embedding
+```
+
+### Modelos disponíveis
+
+* `CNNAntiSpoofing`
+* `SpeakerEmbedding`
+* `ResNetAntiSpoofing`
+* `LSTMAntiSpoofing`
+* `SpeechAISystem`
+
+---
+
+## Treinamento
+
+O `ModelTrainer` implementa o ciclo completo de treinamento.
+
+### Recursos
+
+* Early stopping;
+* Learning rate scheduling;
+* Gradient clipping;
+* Checkpoint do melhor modelo;
+* Validação a cada época.
+
+Exemplo:
 
 ```python
 from src import CNNAntiSpoofing, ModelTrainer
-import torch
 
 model = CNNAntiSpoofing().to(device)
-trainer = ModelTrainer(model, device=device, lr=0.001)
+
+trainer = ModelTrainer(
+    model,
+    device=device,
+    lr=0.001
+)
 
 history = trainer.train(
-    train_loader, 
-    val_loader, 
+    train_loader,
+    val_loader,
     epochs=10,
     save_dir='models'
 )
@@ -279,92 +401,113 @@ history = trainer.train(
 trainer.save_model('models/model.pt')
 ```
 
-**Features:**
-- Early stopping automático
-- Learning rate scheduling
-- Gradient clipping
-- Checkpoint de melhor modelo
-- Validação a cada época
+---
 
-### ModelEvaluator (`src/evaluation.py`)
+## Avaliação
 
-Métricas profissionais de biometria.
+O módulo `ModelEvaluator` calcula métricas utilizadas na avaliação de classificadores e sistemas biométricos:
 
-```python
-from src import ModelEvaluator
+* Accuracy;
+* Precision;
+* Recall;
+* F1-Score;
+* ROC-AUC;
+* EER;
+* minDCF;
+* Confusion Matrix.
 
-evaluator = ModelEvaluator()
-metrics = evaluator.comprehensive_evaluation(y_true, y_pred, y_scores)
-evaluator.print_metrics(metrics)
-```
+O **EER (Equal Error Rate)** é particularmente relevante em sistemas biométricos, pois representa o ponto em que FAR e FRR se igualam.
 
-**Métricas calculadas:**
-- Accuracy, Precision, Recall, F1-Score
-- ROC-AUC (Area Under ROC Curve)
-- **EER** (Equal Error Rate) - métrica padrão em biometria
-- minDCF (Minimum Detection Cost Function)
-- Confusion matrix
+---
 
-#### Comparação de Métricas: Este Projeto vs Realidade
+## Speaker Diarization
 
-| Métrica | Este Projeto<br/>(Dados Sintéticos) | Esperado com ASVspoof<br/>(Dados Reais) | O Que Significa |
-|---------|-------------------------------------|----------------------------------------|-----------------|
-| **Acurácia** | 100% | 85-95% | % de predições corretas |
-| **ROC-AUC** | 1.0 | 0.85-0.95 | Qualidade geral do classificador (0-1) |
-| **EER** | 0.0% | 5-15% | Taxa de erro onde FAR = FRR |
-| **Precision** | 100% | 85-92% | % de áudios fake detectados corretamente |
-| **Recall** | 100% | 82-90% | % de áudios fake verdadeiros identificados |
-| **F1-Score** | 1.0 | 0.84-0.91 | Média harmônica de Precision e Recall |
+O módulo `SpeakerDiarization` segmenta áudios com múltiplos locutores.
 
-**Por que as diferenças?**
-- Dados reais: Variação natural, ruído, compressão, artefatos
-- Dados sintéticos: Padrão fixo e artificial
-- Deepfakes modernos: Cada vez mais realistas (vocoder neural)
-
-### SpeakerDiarization (`src/diarization.py`)
-
-Identifica mudanças de locutor em cenários multi-speaker.
+Exemplo:
 
 ```python
 from src import SpeakerDiarization
 
-diarizer = SpeakerDiarization(n_speakers=2)
-result = diarizer.diarize('audio.wav', model)
-# Retorna: DataFrame com [start_time, end_time, speaker_id, duration]
+diarizer = SpeakerDiarization(
+    n_speakers=2
+)
+
+result = diarizer.diarize(
+    'audio.wav',
+    model
+)
 ```
 
-### AudioInference (`src/predict.py`)
+O resultado contém informações como:
 
-Carrega modelos e faz predições em tempo real.
+```text
+start_time
+end_time
+speaker_id
+duration
+```
+
+---
+
+## Inferência
+
+A classe `AudioInference` permite carregar modelos treinados e realizar predições.
 
 ```python
 from src import AudioInference
 
-inference = AudioInference(model_dir='models')
-result = inference.predict_spoofing('audio.wav')
-print(f"Predição: {result['prediction']}")
-print(f"Confiança: {result['confidence']*100:.1f}%")
+inference = AudioInference(
+    model_dir='models'
+)
+
+result = inference.predict_spoofing(
+    'audio.wav'
+)
+
+print(result['prediction'])
+print(result['confidence'])
 ```
+
+---
 
 ## API REST
 
-Endpoints disponíveis em http://localhost:8000:
+A aplicação disponibiliza uma API utilizando FastAPI.
+
+Inicialização:
+
+```bash
+python -m uvicorn api.main:app --reload
+```
+
+Documentação Swagger:
+
+```text
+http://localhost:8000/docs
+```
+
+---
 
 ### GET `/`
-Informações do servidor.
+
+Retorna informações do servidor.
 
 ### GET `/health`
-Health check da API.
+
+Health check da aplicação.
 
 ### POST `/predict/spoof`
-Detecta spoofing em áudio.
+
+Detecta spoofing no áudio enviado.
 
 ```bash
 curl -X POST http://localhost:8000/predict/spoof \
   -F "file=@audio.wav"
 ```
 
-**Resposta:**
+Exemplo de resposta:
+
 ```json
 {
   "prediction": "real",
@@ -375,7 +518,8 @@ curl -X POST http://localhost:8000/predict/spoof \
 ```
 
 ### POST `/predict/verify`
-Verifica speaker.
+
+Realiza análise de speaker verification.
 
 ```bash
 curl -X POST http://localhost:8000/predict/verify \
@@ -383,7 +527,8 @@ curl -X POST http://localhost:8000/predict/verify \
 ```
 
 ### POST `/predict/diarize`
-Diarização de áudio.
+
+Executa diarização.
 
 ```bash
 curl -X POST http://localhost:8000/predict/diarize \
@@ -392,6 +537,7 @@ curl -X POST http://localhost:8000/predict/diarize \
 ```
 
 ### POST `/extract-features`
+
 Extrai features acústicas.
 
 ```bash
@@ -400,99 +546,88 @@ curl -X POST http://localhost:8000/extract-features \
   -F "feature_type=mel"
 ```
 
-## Pipeline de Dados
+---
 
-```
-1. Carregar Áudio (librosa)
-   load_audio() -> np.array (mono, 16kHz)
+## Como Executar
 
-2. Normalizar
-   normalize_audio() -> audio em [-1, 1]
+### Requisitos
 
-3. Processar (opcional)
-   pitch_shift(), time_stretch(), add_noise()
+* Python 3.10+
+* PyTorch 2.0+
+* librosa
+* NumPy
+* Pandas
+* scikit-learn
+* Matplotlib
+* FastAPI
+* Uvicorn
+* Jupyter
 
-4. Extrair Features
-   extract_mel_spectrogram() -> (128, n_frames)
+GPU é opcional:
 
-5. Normalizar Features
-   normalize_features() -> (mean=0, std=1)
+* CUDA 11.8+
+* Aproximadamente 2 GB de VRAM por modelo.
 
-6. Criar Dataset
-   AudioDataset -> (1, n_mels, n_frames)
+### Instalação
 
-7. Batch e Load
-   DataLoader -> batches (32, 1, 128, frames)
-
-8. Forward Pass (GPU/CPU)
-   model(x) -> logits (32, 2)
-
-9. Loss e Otimização
-   loss = CrossEntropyLoss(output, labels)
-   optimizer.step()
-
-10. Validação
-    evaluate() -> accuracy, loss
-
-11. Métricas
-    comprehensive_evaluation() -> EER, ROC-AUC, F1
-
-12. Deploy
-    model.save() -> models/model.pt
-    API server ou predict script
+```bash
+pip install -r requirements.txt
 ```
 
-## Treinamento
+---
 
-### Dataset Preparação
+### Opção 1 — Notebook
 
-```python
-from src import AudioDataset
-from torch.utils.data import DataLoader
-
-dataset = AudioDataset(
-    audio_files=['audio1.wav', 'audio2.wav'],
-    labels=[0, 1],  # 0=real, 1=fake
-    sr=16000,
-    n_mels=128,
-    feature_type='mel',
-    augmentation=True
-)
-
-loader = DataLoader(dataset, batch_size=32, shuffle=True)
+```bash
+jupyter notebook notebook_demo.ipynb
 ```
 
-### Training Loop Completo
+O notebook possui 10 células que percorrem:
 
-```python
-from src import CNNAntiSpoofing, ModelTrainer, ModelEvaluator
-import torch
+1. Geração dos dados;
+2. Preparação;
+3. Treinamento;
+4. Avaliação;
+5. Visualização;
+6. Predição.
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+---
 
-# Criar modelo
-model = CNNAntiSpoofing().to(device)
+### Opção 2 — Treinamento via CLI
 
-# Treinar
-trainer = ModelTrainer(model, device=device, lr=0.001)
-history = trainer.train(train_loader, val_loader, epochs=10)
-
-# Avaliar
-criterion = torch.nn.CrossEntropyLoss()
-val_loss, val_acc, preds, labels = trainer.evaluate(val_loader, criterion)
-
-# Métricas detalhadas
-evaluator = ModelEvaluator()
-metrics = evaluator.comprehensive_evaluation(labels, preds, scores)
-evaluator.print_metrics(metrics)
-
-# Salvar
-trainer.save_model('models/model.pt')
+```bash
+python src/main.py --mode train --epochs 5
 ```
+
+### Predição
+
+```bash
+python src/predict.py \
+  --audio audio.wav \
+  --task spoof
+```
+
+### Modelo específico
+
+```bash
+python src/train.py \
+  --model-type anti_spoof \
+  --epochs 20
+```
+
+---
+
+### Opção 3 — API
+
+```bash
+python -m uvicorn api.main:app --reload
+```
+
+---
 
 ## Configuração
 
-Arquivo `config.json` (gerado automaticamente):
+O arquivo `config.json` utiliza parâmetros como:
 
 ```json
 {
@@ -508,217 +643,197 @@ Arquivo `config.json` (gerado automaticamente):
 }
 ```
 
-## Métricas de Performance
+---
 
-### Com Dataset Dummy (30 áudios, 2s cada)
+## Estrutura do Projeto
 
-- Tempo de treinamento (5 épocas): ~30s
-- Accuracy: 85-92%
-- ROC-AUC: 0.92
-- EER: 8-12%
-- F1-Score: 0.88
+```text
+Speech AI System/
+│
+├── src/
+│   ├── main.py
+│   ├── train.py
+│   ├── predict.py
+│   ├── preprocessing.py
+│   ├── features.py
+│   ├── models.py
+│   ├── dataset.py
+│   ├── training.py
+│   ├── evaluation.py
+│   ├── diarization.py
+│   └── __init__.py
+│
+├── api/
+│   └── main.py
+│
+├── notebook_demo.ipynb
+├── DOCUMENTACAO.md
+├── requirements.txt
+├── README.md
+│
+├── data/
+│   └── raw/
+│
+├── models/
+│
+└── results/
+```
 
-### Com Dataset Real (ASVspoof 2019)
+---
 
-- Tempo de treinamento (20 épocas): ~4 horas (GPU)
-- Accuracy: 95-98%
-- ROC-AUC: 0.98+
-- EER: 0.5-2%
+## Componentes Principais
 
-## Requisitos do Sistema
+### `AudioProcessor`
 
-- Python 3.10+
-- PyTorch 2.0+
-- librosa
-- numpy, pandas
-- scikit-learn
-- matplotlib
-- FastAPI, uvicorn (para API)
-- Jupyter (para notebook)
+Responsável por:
 
-**GPU (opcional):**
-- CUDA 11.8+ para aceleração
-- ~2GB VRAM por modelo
+* carregamento;
+* normalização;
+* pitch shifting;
+* time stretching;
+* adição de ruído;
+* remoção de silêncio.
 
-## Stack Tecnológico
+### `FeatureExtractor`
 
-| Componente | Tecnologia |
-|-----------|-----------|
-| Deep Learning | PyTorch 2.0+ |
-| Processamento de Áudio | librosa |
-| Processamento Numérico | NumPy, SciPy |
-| Data Manipulation | Pandas |
-| Machine Learning | scikit-learn |
-| Visualização | Matplotlib |
-| Web API | FastAPI |
-| Notebook | Jupyter |
+Responsável pela extração das características acústicas.
+
+### `ModelTrainer`
+
+Responsável pelo treinamento, validação, checkpoint e otimização.
+
+### `ModelEvaluator`
+
+Responsável pelas métricas de classificação e biometria.
+
+### `AudioInference`
+
+Responsável pela inferência dos modelos treinados.
+
+### `SpeakerDiarization`
+
+Responsável pela segmentação de múltiplos locutores.
+
+---
 
 ## Casos de Uso
 
-1. **Autenticação Biométrica** - Verificar identidade por voz
-2. **Detecção de Deepfake** - Identificar áudio sintetizado
-3. **Segurança em Call Centers** - Verificar quem está ligando
-4. **Transcrição Automática** - Saber quem falou quando
-5. **Análise de Conferências** - Segmentar por locutor
-6. **Forense Digital** - Análise de autenticidade de áudio
+O projeto pode servir como base experimental para:
 
-## Troubleshooting
+1. **Autenticação biométrica por voz**
+2. **Detecção de áudio sintetizado**
+3. **Análise de segurança em sistemas de voz**
+4. **Speaker verification**
+5. **Speaker diarization**
+6. **Análise forense de áudio**
+7. **Pesquisa em detecção de deepfakes de voz**
 
-### CUDA não disponível
-Sistema detecta automaticamente e usa CPU. Para forçar GPU:
-```python
-device = torch.device('cuda:0')
-```
+Esses cenários representam possibilidades de aplicação do pipeline, e não validações comerciais ou clínicas do sistema.
 
-### Arquivo de áudio não encontrado
-Verifique caminho e formato (.wav, .mp3).
-
-### Out of memory
-Reduza `batch_size` ou `segment_duration` em config.json.
-
-### Modelos não carregam
-Verifique se estão em `models/` com extensão `.pt`.
-
-### Performance lenta
-- Usar GPU (NVIDIA com CUDA)
-- Reduzir número de features
-- Usar batches maiores
-
-## Datasets de Referência
-
-Para treinar em dados reais:
-
-- **ASVspoof 2019**: https://www.asvspoof.org/ (anti-spoofing)
-- **VoxCeleb**: http://www.robots.ox.ac.uk/~vgg/data/voxceleb/ (speaker)
-- **TIMIT**: https://catalog.ldc.upenn.edu/LDC93S1 (speaker verification)
-
-## Próximas Melhorias
-
-1. Fine-tuning com modelos pré-treinados (transfer learning)
-2. Attention mechanisms para melhor captura de features
-3. Ensemble de múltiplos modelos
-4. TorchScript para deployment otimizado
-5. Quantização para dispositivos mobile
-6. Streaming processing para áudio em tempo real
-7. Testes unitários abrangentes
-8. Docker image para deployment
+---
 
 ## Limitações Atuais
 
-### Dados Sintéticos
-1. **Padrões Artificiais**: Áudios gerados com frequências fixas (200Hz vs 250Hz)
-2. **Sem Ruído Real**: Não incluem background noise, reverberação ou compressão
-3. **Dataset Minúsculo**: Apenas 30 amostras vs 100k+ em datasets reais
-4. **Métricas Inflacionadas**: 100% acurácia não reflete comportamento em produção
-5. **Overfitting Garantido**: Modelo memoriza padrões triviais
+### Dataset
+
+A principal limitação é o conjunto sintético utilizado na versão atual:
+
+* Apenas 30 amostras;
+* Frequências artificiais e fixas;
+* Ausência de ruído real;
+* Ausência de reverberação;
+* Ausência de compressão;
+* Variabilidade limitada;
+* Forte risco de overfitting aos padrões artificiais.
+
+Portanto, os resultados de 100% não devem ser interpretados como desempenho de um detector de deepfake em condições reais.
 
 ### Sistema
-6. Requer sample rate consistente (16kHz)
-7. Melhor performance com áudios de 2-10 segundos
-8. Clustering automático assume n_speakers conhecido
-9. EER calculado com busca exaustiva (computacionalmente intensivo)
 
-### Recomendação de Uso
-**Para desenvolvimento e testes**: Use este dataset
-**Para produção**: Integre ASVspoof 2019 ou similar
+* Sample rate esperado de 16 kHz;
+* Melhor comportamento com áudios de aproximadamente 2–10 segundos;
+* Diarização depende do número de locutores informado;
+* Cálculo do EER pode ser computacionalmente intensivo.
 
 ---
 
-## Como Usar Dados Reais (Produção)
+## Dataset Real — Próxima Validação
 
-### Opção 1: ASVspoof 2019 (Recomendado)
+Para avançar da demonstração para uma avaliação mais representativa, o projeto pode ser executado com bases especializadas como:
 
-```bash
-# 1. Baixar dataset (~35GB, 100k+ áudios)
-cd /datasets
-wget https://datashare.is.ed.ac.uk/bitstream/handle/10283/3336/ASVspoof2019_LA_train_dev.zip
-unzip ASVspoof2019_LA_train_dev.zip
+### ASVspoof 2019
 
-# 2. Treinar modelo
-cd /seu/projeto
-python -c "
-from src import ModelTrainer, CNNAntiSpoofing, AudioDataset
-from torch.utils.data import DataLoader
+Dataset direcionado à avaliação de sistemas de **Automatic Speaker Verification e anti-spoofing**.
 
-# Carregar dados reais
-dataset = AudioDataset(
-    audio_files=['ASVspoof2019_LA/train/flac/...'],
-    labels=[0,1,0,1,...],
-    augmentation=True
-)
+Outras bases de referência:
 
-model = CNNAntiSpoofing()
-trainer = ModelTrainer(model, lr=0.001)
-history = trainer.train(..., epochs=50)
-"
-```
+* VoxCeleb;
+* LibriSpeech;
+* Common Voice.
 
-### Opção 2: Seu Próprio Dataset
+---
 
-```python
-from src import AudioDataset, ModelTrainer, CNNAntiSpoofing
+## Próximas Melhorias
 
-# Seus áudios com labels
-dataset = AudioDataset(
-    audio_files=[
-        'real_audio_1.wav',   # Label 0
-        'real_audio_2.wav',   # Label 0
-        'fake_audio_1.wav',   # Label 1
-        'fake_audio_2.wav',   # Label 1
-    ],
-    labels=[0, 0, 1, 1],
-    augmentation=True
-)
+* Fine-tuning com modelos pré-treinados;
+* Transfer Learning;
+* Attention mechanisms;
+* Ensemble de modelos;
+* TorchScript;
+* Quantização;
+* Processamento de áudio em streaming;
+* Testes unitários;
+* Containerização com Docker;
+* Avaliação com datasets reais;
+* Melhorias na generalização do anti-spoofing.
 
-# Treinar
-model = CNNAntiSpoofing()
-trainer = ModelTrainer(model)
-history = trainer.train(train_loader, val_loader, epochs=20)
-```
-
-### Datasets Públicos Recomendados
-
-| Dataset | Tamanho | Áudios | Características | URL |
-|---------|---------|--------|-----------------|-----|
-| **ASVspoof 2019 LA** | 35 GB | 107k | Spoofing, deepfakes, TTS | asvspoof.org |
-| **VoxCeleb1** | 150 GB | 1.3M | Speaker recognition, multi-linguagem | https://www.robots.ox.ac.uk/~vgg/data/voxceleb/ |
-| **LibriSpeech** | 60 GB | 1k horas | Speech recognition, limpo | http://www.openslr.org/12/ |
-| **CommonVoice** | Variable | 500k+ | Multi-idioma, CC-licensed | https://commonvoice.mozilla.org/ |
-
-## Documentação Detalhada
-
-Para documentação técnica completa, consulte [DOCUMENTACAO.md](DOCUMENTACAO.md).
+---
 
 ## Referências Científicas
 
-- ASVspoof Challenge: https://arxiv.org/abs/1904.05441
-- ECAPA-TDNN: https://arxiv.org/abs/2005.07143
-- VoxCeleb: https://arxiv.org/abs/1706.08612
-- PyTorch Audio: https://pytorch.org/audio/
-
-## Licença
-
-MIT
-
-## Autor
-
-Sistema desenvolvido como projeto de processamento de voz com deep learning.
-
-## Contato e Suporte
-
-Para dúvidas ou sugestões sobre o projeto, consulte a documentação técnica em `DOCUMENTACAO.md`.
+* **ASVspoof Challenge** — https://arxiv.org/abs/1904.05441
+* **ECAPA-TDNN** — https://arxiv.org/abs/2005.07143
+* **VoxCeleb** — https://arxiv.org/abs/1706.08612
+* **PyTorch Audio** — https://pytorch.org/audio/
 
 ---
 
-**Status do Projeto:** 
-- ✅ Pipeline completo funcional com dados sintéticos
-- ✅ Código limpo e testado
-- ✅ Documentação detalhada
-- ⚠️ Métricas inflacionadas (1.0) devido a dados dummy
-- 📋 **Próximo passo**: Integrar ASVspoof 2019 para produção
+## O que este projeto demonstra
 
-**Resumo das Correções Implementadas:**
-- Remoção de todos os emojis (UnicodeEncodeError)
-- Correção de tensor shapes em batching (RuntimeError)
-- Adição de n_mfcc ao config.json (KeyError)
-- Código robusto com valores padrão para configurações
+* Deep Learning aplicado a áudio;
+* Processamento digital de sinais;
+* Extração de características acústicas;
+* CNNs, ResNet e LSTM;
+* Voice Biometrics;
+* Anti-Spoofing;
+* Speaker Verification;
+* Speaker Diarization;
+* Avaliação com métricas biométricas;
+* Desenvolvimento de API REST;
+* Organização modular de projetos de ML;
+* Treinamento e inferência em CPU/GPU;
+* Integração entre Machine Learning e software.
+
+---
+
+## Licença
+
+MIT License.
+
+---
+
+## Autor
+
+**Yuri Fernando Dubbern**
+
+AI/ML Engineer · Generative AI · Machine Learning · Data Science · Signal Processing
+
+[LinkedIn](https://www.linkedin.com/in/yuridubbern) · [GitHub](https://github.com/Yuri-Fernando) · [Lattes](http://lattes.cnpq.br/7151392692642166) · [Linktree](https://linktr.ee/yuri.f.dubbern)
+
+---
+
+## Observação Final
+
+O projeto está **concluído em sua versão atual**, com pipeline funcional e documentação técnica. A próxima etapa não é completar a arquitetura básica, mas **avaliar a generalização do sistema com datasets reais de voz e ataques de spoofing**, especialmente ASVspoof 2019.
+
+Essa distinção é importante: o projeto já demonstra engenharia de **Speech AI + Deep Learning + Biometrics + API**, enquanto a validação em dados reais representa uma evolução experimental natural.
